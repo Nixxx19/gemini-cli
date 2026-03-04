@@ -468,24 +468,21 @@ export const AppContainer = (props: AppContainerProps) => {
       });
 
       // Show connected account at startup (only for fresh sessions, not resumed)
-      // Use setTimeout to ensure history manager is ready
       if (sessionStartSource === SessionStartSource.Startup) {
-        setTimeout(() => {
-          const authType = config.getContentGeneratorConfig()?.authType;
-          if (authType === AuthType.LOGIN_WITH_GOOGLE) {
-            const userAccountManager = new UserAccountManager();
-            const cachedAccount = userAccountManager.getCachedGoogleAccount();
-            if (cachedAccount) {
-              historyManager.addItem(
-                {
-                  type: MessageType.INFO,
-                  text: `Authenticated with Google account: ${cachedAccount}`,
-                },
-                Date.now(),
-              );
-            }
+        const authType = config.getContentGeneratorConfig()?.authType;
+        if (authType === AuthType.LOGIN_WITH_GOOGLE) {
+          const userAccountManager = new UserAccountManager();
+          const cachedAccount = userAccountManager.getCachedGoogleAccount();
+          if (cachedAccount) {
+            historyManager.addItem(
+              {
+                type: MessageType.INFO,
+                text: `Authenticated with Google account: ${cachedAccount}`,
+              },
+              Date.now(),
+            );
           }
-        }, 100);
+        }
       }
     })();
     registerCleanup(async () => {

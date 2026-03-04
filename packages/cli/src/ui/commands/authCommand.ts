@@ -65,7 +65,7 @@ export const authCommand: SlashCommand = {
     // Show account info for Google login
     if (
       authType === AuthType.LOGIN_WITH_GOOGLE ||
-      selectedAuthType === 'oauth-personal'
+      selectedAuthType === AuthType.LOGIN_WITH_GOOGLE
     ) {
       const userAccountManager = new UserAccountManager();
       const cachedAccount = userAccountManager.getCachedGoogleAccount();
