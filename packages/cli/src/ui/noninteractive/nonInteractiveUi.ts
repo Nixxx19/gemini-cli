@@ -6,7 +6,7 @@
 
 import type { CommandContext } from '../commands/types.js';
 import type { ExtensionUpdateAction } from '../state/extensions.js';
-import type { HistoryItemAbout, HistoryItemWithoutId } from '../types.js';
+import type { HistoryItemAbout, HistoryItem } from '../types.js';
 import { GIT_COMMIT_INFO } from '../../generated/git-commit.js';
 import { getDisplayString } from '@google/gemini-cli-core';
 
@@ -14,7 +14,7 @@ import { getDisplayString } from '@google/gemini-cli-core';
  * Type guard to check if an item is a HistoryItemAbout
  */
 function isHistoryItemAbout(
-  item: HistoryItemWithoutId,
+  item: Omit<HistoryItem, 'id'>,
 ): item is HistoryItemAbout {
   return item.type === 'about';
 }
