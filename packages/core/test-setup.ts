@@ -10,8 +10,37 @@ if (process.env.NO_COLOR !== undefined) {
 }
 
 import { setSimulate429 } from './src/utils/testUtils.js';
-import { vi, afterEach } from 'vitest';
+import { vi, afterEach, beforeEach } from 'vitest';
 import { coreEvents } from './src/utils/events.js';
+
+// --- TestConsolePatcher PoC logic ---
+const originalConsole = { ...console };
+const consoleBuffer: { level: string; args: unknown[]; testName: string }[] =
+  [];
+let currentTest = '';
+
+for (const level of ['log', 'warn', 'error', 'info', 'debug'] as const) {
+  // @ts-expect-error indexing
+  console[level] = (...args: unknown[]) =>
+    consoleBuffer.push({ level, args, testName: currentTest });
+}
+
+beforeEach((ctx) => {
+  currentTest = ctx.task.name;
+  consoleBuffer.length = 0;
+});
+
+afterEach((ctx) => {
+  const logs = consoleBuffer.filter((e) => e.testName === currentTest);
+  if (ctx.task.result?.state === 'fail') {
+    for (const entry of logs) {
+      // @ts-expect-error indexing
+      originalConsole[entry.level as keyof typeof console](...entry.args);
+    }
+  }
+  consoleBuffer.length = 0;
+});
+// ------------------------------------
 
 // Increase max listeners to avoid warnings in large test suites
 coreEvents.setMaxListeners(100);
@@ -25,6 +54,10 @@ afterEach(() => {
 
 // Default mocks for Storage and ProjectRegistry to prevent disk access in most tests.
 // These can be overridden in specific tests using vi.unmock().
+
+vi.mock('./src/utils/debugLogger.js', () => ({
+  debugLogger: { log: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}));
 
 vi.mock('./src/config/projectRegistry.js', async (importOriginal) => {
   const actual =
